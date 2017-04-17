@@ -43,8 +43,10 @@ public class QB {
   private JLabel lblDropExcelFile;
   private JPanel panelSouth;
   protected boolean loop;
-  private JLabel label;
+  private JLabel excelLabel;
   private Panel panel_1;
+  private JLabel logLabel;
+  private String log;
 
   /**
    * Launch the application.
@@ -81,7 +83,7 @@ public class QB {
     frmCreateDocumentStructure.setIconImage(icon1.getImage());
     frmCreateDocumentStructure.setLocation(new Point(400, 15));
     frmCreateDocumentStructure.setSize(new Dimension(500, 700));
-    frmCreateDocumentStructure.setTitle("Create document structure");
+    frmCreateDocumentStructure.setTitle("Create document structure v3");
     frmCreateDocumentStructure.setResizable(false);
     frmCreateDocumentStructure.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -179,29 +181,59 @@ public class QB {
     panel_1 = new Panel();
     panelSouth.add(panel_1, BorderLayout.PAGE_END);
 
-    label = new JLabel("");
-    label.addMouseListener(new MouseAdapter() {
+    excelLabel = new JLabel("");
+    excelLabel.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseEntered(MouseEvent e) {
+        lblDropExcelFile.setText("");
         lblDropExcelFile.setIcon(new ImageIcon(QB.class.getResource("/resource/excel.png")));
       }
 
       @Override
       public void mouseExited(MouseEvent e) {
         lblDropExcelFile.setIcon(null);
+        lblDropExcelFile.setText("Drop Excel File(s) Here !");
       }
     });
-    label.setHorizontalTextPosition(SwingConstants.RIGHT);
-    panel_1.add(label);
+    excelLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+    panel_1.add(excelLabel);
 
-    label.setPreferredSize(new Dimension(32, 32));
-    label.setMaximumSize(new Dimension(32, 32));
-    label.setHorizontalAlignment(SwingConstants.RIGHT);
-    label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    label.setVerticalTextPosition(SwingConstants.BOTTOM);
-    label.setVerticalAlignment(SwingConstants.BOTTOM);
-    label.setToolTipText("Demo File");
-    label.setIcon(new ImageIcon(QB.class.getResource("/resource/excelicon.jpg")));
+    excelLabel.setPreferredSize(new Dimension(32, 32));
+    excelLabel.setMaximumSize(new Dimension(32, 32));
+    excelLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+    excelLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    excelLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+    excelLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+    excelLabel.setToolTipText("Demo File");
+    excelLabel.setIcon(new ImageIcon(QB.class.getResource("/resource/excelicon.jpg")));
+
+    logLabel = new JLabel("");
+    logLabel.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseEntered(MouseEvent arg0) {
+        log = textArea.getText();
+        textArea.setText("v1 - Read excel on basis of Indent spacing.\n\n");
+        textArea.append(
+            "v2 - Changed pattern of reading excel. \nNow it happens on basis of column depth(A->B->C and so on).\n\n");
+        textArea.append(
+            "v3 - Added support of new column entity type in document structure \ntable to handle Box service");
+      }
+
+      @Override
+      public void mouseExited(MouseEvent e) {
+        textArea.setText(log);
+        log = "";
+      }
+    });
+    logLabel.setIcon(new ImageIcon(QB.class.getResource("/resource/logicon.png")));
+    logLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+    logLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+    logLabel.setToolTipText("Change Log");
+    logLabel.setPreferredSize(new Dimension(32, 32));
+    logLabel.setMaximumSize(new Dimension(32, 32));
+    logLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+    logLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+    panel_1.add(logLabel);
 
   }
 
