@@ -29,6 +29,7 @@ public class FolderStructureSqlBuilder2 {
   String filePath;
   int sheetNo = 0;
   JTextArea textArea;
+  String entityType[] = {"P", "A"};
 
   /**
    * @param fileName
@@ -117,62 +118,75 @@ public class FolderStructureSqlBuilder2 {
        * // Trace-out System.out.println("--------------------------------------------------");
        * System.out.println("PrevName\tCurrentName\tPrevI\tCurrentI\tList");
        */
-      for (FolderStructure fs : folderStructure) {
-        currentIndent = fs.getIndent();
-        currentName = fs.getName();
+      for (int entityNumber = 0; entityNumber < entityType.length; entityNumber++) {
+        list.add("-- Queries for entity type " + entityType[entityNumber] + " --");
 
-        if (currentIndent > prevIndent) {
-          parentNameList.add(prevName); // Add a folder to stack if indent/column increases
-        } else if (currentIndent < prevIndent) {
-          for (int jump = 1; jump <= prevIndent - currentIndent; jump++)
-            parentNameList.remove(parentNameList.size()
-                - 1);/* Remove folder(s) from stack depending upon decrease in indent/columns */
+        for (FolderStructure fs : folderStructure) {
+          currentIndent = fs.getIndent();
+          currentName = fs.getName();
+
+          if (currentIndent > prevIndent) {
+            parentNameList.add(prevName); // Add a folder to stack if indent/column increases
+          } else if (currentIndent < prevIndent) {
+            for (int jump = 1; jump <= prevIndent - currentIndent; jump++)
+              parentNameList.remove(parentNameList.size()
+                  - 1);/* Remove folder(s) from stack depending upon decrease in indent/columns */
+          }
+
+
+          if (!parentNameList.isEmpty()) {
+            parent_name = parentNameList.get(parentNameList.size() - 1);
+            /*
+             * System.out.println(parent_name + "\t\t" + currentName + "\t\t" + prevIndent + "\t" +
+             * currentIndent + "\t\t" + parentNameList);
+             */
+          }
+
+
+          if (currentIndent == 0)// For parent folders.
+          {
+            query =
+                "insert into document_structure (folder_name,org_id,created_ts,updated_ts,entity_type) values (\""
+                    + currentName + "\"," + orgID + ",now(),now(),'" + entityType[entityNumber]
+                    + "');";
+          } else if (currentIndent == 1)// For level 1 sub-folders.
+          {
+            query =
+                "insert into document_structure (folder_name,org_id,created_ts,updated_ts,parent_id,folder_path,entity_type) values "
+                    + "(\"" + currentName + "\"," + orgID
+                    + ",now(),now(),(select * from(select id from document_structure where folder_name=\""
+                    + parent_name + "\" order by id desc limit 1) as prev_id),"
+                    + "concat(\"/\",(select * from(select id from document_structure where folder_name=\""
+                    + parent_name + "\" order by id desc limit 1) as prev_id)),'"
+                    + entityType[entityNumber] + "');";
+          } else // For all remaining sub-sub folders.
+          {
+            query =
+                "insert into document_structure (folder_name,org_id,created_ts,updated_ts,parent_id,folder_path,entity_type) values "
+                    + "(\"" + currentName + "\"," + orgID
+                    + ",now(),now(),(select * from(select id from document_structure where folder_name=\""
+                    + parent_name + "\" order by id desc limit 1) as prev_id),"
+                    + "concat((select folder_path from(select id,folder_path from document_structure where folder_name=\""
+                    + parent_name + "\" order by id desc limit 1) as prev_id)"
+                    + ",concat(\"/\",(select * from(select id from document_structure where folder_name=\""
+                    + parent_name + "\" order by id desc limit 1) as prev_id))),'"
+                    + entityType[entityNumber] + "');";
+          }
+          list.add(query);
+          prevIndent = currentIndent;
+          prevName = currentName;
         }
-
-
-        if (!parentNameList.isEmpty()) {
-          parent_name = parentNameList.get(parentNameList.size() - 1);
-          /*
-           * System.out.println(parent_name + "\t\t" + currentName + "\t\t" + prevIndent + "\t" +
-           * currentIndent + "\t\t" + parentNameList);
-           */
-        }
-
-
-        if (currentIndent == 0)// For parent folders.
-        {
-          query =
-              "insert into document_structure (folder_name,org_id,created_ts,updated_ts) values (\""
-                  + currentName + "\"," + orgID + ",now(),now());";
-        } else if (currentIndent == 1)// For level 1 sub-folders.
-        {
-          query =
-              "insert into document_structure (folder_name,org_id,created_ts,updated_ts,parent_id,folder_path) values "
-                  + "(\"" + currentName + "\"," + orgID
-                  + ",now(),now(),(select * from(select id from document_structure where folder_name=\""
-                  + parent_name + "\" order by id desc limit 1) as prev_id),"
-                  + "concat(\"/\",(select * from(select id from document_structure where folder_name=\""
-                  + parent_name + "\" order by id desc limit 1) as prev_id)));";
-        } else // For all remaining sub-sub folders.
-        {
-          query =
-              "insert into document_structure (folder_name,org_id,created_ts,updated_ts,parent_id,folder_path) values "
-                  + "(\"" + currentName + "\"," + orgID
-                  + ",now(),now(),(select * from(select id from document_structure where folder_name=\""
-                  + parent_name + "\" order by id desc limit 1) as prev_id),"
-                  + "concat((select folder_path from(select id,folder_path from document_structure where folder_name=\""
-                  + parent_name + "\" order by id desc limit 1) as prev_id)"
-                  + ",concat(\"/\",(select * from(select id from document_structure where folder_name=\""
-                  + parent_name + "\" order by id desc limit 1) as prev_id))));";
-        }
-        list.add(query);
-        prevIndent = currentIndent;
-        prevName = currentName;
+        list.add(
+            "insert into document_structure (folder_name,org_id,created_ts,updated_ts,uncategorized_ind,entity_type) values (\"Uncategorized\","
+                + orgID + ",now(),now(),1,'" + entityType[entityNumber] + "');");// Adding an
+                                                                                 // uncategorized
+                                                                                 // folder to the
+                                                                                 // final
+        // list.
+        list.add("");
+        list.add("");
+        list.add("");
       }
-      list.add(
-          "insert into document_structure (folder_name,org_id,created_ts,updated_ts,uncategorized_ind) values (\"Uncategorized\","
-              + orgID + ",now(),now(),1);");// Adding an uncategorized folder to the final list.
-
       toFile(list);
     }
 
@@ -192,7 +206,8 @@ public class FolderStructureSqlBuilder2 {
       }
       pw.close();
       // System.out.println("Queries developed successfully.");
-      textArea.append("\nQueries developed successfully at : " + createdFileName);
+      textArea.append("\nQueries created for both Project and Asset successfully at : \n"
+          + createdFileName + " \nUse as per requirement.");
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
