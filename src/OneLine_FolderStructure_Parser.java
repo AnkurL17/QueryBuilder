@@ -25,7 +25,7 @@ public class OneLine_FolderStructure_Parser {
 
 
   public static void main(String args[]) throws IOException {
-    List<String> rowData = new ArrayList<String>();
+    List<String> rowData;
     List<List<String>> fileData = new ArrayList<List<String>>();
     try {
       FileInputStream excelFile = new FileInputStream(new File(filePath));
@@ -35,6 +35,7 @@ public class OneLine_FolderStructure_Parser {
       while (iterator.hasNext()) {
         Row currentRow = iterator.next();
         Iterator<Cell> cellIterator = currentRow.iterator();
+        rowData = new ArrayList<String>();
         while (cellIterator.hasNext()) {
           Cell currentCell = cellIterator.next();
           // System.out.print(currentCell.getStringCellValue() + "\t");
